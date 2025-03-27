@@ -4,7 +4,10 @@ pub mod InheritX {
         Map, StorageMapReadAccess, StorageMapWriteAccess, StoragePointerReadAccess,
         StoragePathEntry, StoragePointerWriteAccess,
     };
-    use starknet::{ContractAddress, get_caller_address, get_contract_address, get_block_timestamp};
+    use starknet::{
+        ContractAddress, contract_address_const, get_caller_address, get_contract_address,
+        get_block_timestamp,
+    };
     use crate::interfaces::IInheritX::{AssetAllocation, IInheritX, InheritancePlan};
     use crate::types::{
         SimpleBeneficiary, ActivityType, ActivityRecord, UserProfile, VerificationStatus, UserRole,
@@ -280,34 +283,65 @@ pub mod InheritX {
         fn test_deployment(ref self: ContractState) -> bool {
             self.deployed.read()
         }
-        
-                /// Adds a media message to a specific plan.
-        /// @param self - The contract state.
-        /// @param plan_id - The ID of the plan.
-        /// @param media_type - The type of media (e.g., 0 for image, 1 for video).
-        /// @param media_content - The content of the media (e.g., IPFS hash or URL as felt252).
-        #[external]
-        fn add_media_message(
-            ref self: ContractState,
-            plan_id: u256,
-            media_type: felt252,
-            media_content: felt252,
-        ) {
-            // Get the current count of media messages for the plan
-            let current_count = self.media_message_count.read(plan_id);
 
-            // Create a new media message
-            let new_message = MediaMessage {
-                plan_id: plan_id,
-                media_type: media_type,
-                media_content: media_content,
-            };
+        fn delete_user_profile(ref self: ContractState, address: ContractAddress) -> bool {
+            let admin = self.admin.read();
+            let mut user = self.user_profiles.read(address);
+            let caller = user.address;
 
-            // Store the new message at the next index
-            self.media_messages.write((plan_id, current_count), new_message);
+            assert(
+                get_caller_address() == admin || get_caller_address() == caller,
+                'No right to delete',
+            );
+            // user.address,
+            user.username = ' ';
+            user.address = contract_address_const::<0>();
+            user.email = ' ';
+            user.full_name = ' ';
+            user.profile_image = ' ';
+            user.verification_status = VerificationStatus::Nil;
+            user.role = UserRole::User;
+            user.notification_settings = NotificationSettings::Nil;
+            user.security_settings = SecuritySettings::Nil;
+            user.created_at = 0;
+            user.last_active = 0;
 
-            // Increment the message count for the plan
-            self.media_message_count.write(plan_id, current_count + 1);
+            self.user_profiles.write(caller, user);
+
+            true
         }
+
+        fn get_user(ref self: ContractState, address: ContractAddress) -> UserProfile {
+            let user = self.user_profiles.read(address);
+            user
+        }
+        /// Adds a media message to a specific plan.
+    /// @param self - The contract state.
+    /// @param plan_id - The ID of the plan.
+    /// @param media_type - The type of media (e.g., 0 for image, 1 for video).
+    /// @param media_content - The content of the media (e.g., IPFS hash or URL as felt252).
+    // #[external]
+    // fn add_media_message(
+    //     ref self: ContractState,
+    //     plan_id: u256,
+    //     media_type: felt252,
+    //     media_content: felt252,
+    // ) {
+    //     // Get the current count of media messages for the plan
+    //     let current_count = self.media_message_count.read(plan_id);
+
+        //     // Create a new media message
+    //     let new_message = MediaMessage {
+    //         plan_id: plan_id,
+    //         media_type: media_type,
+    //         media_content: media_content,
+    //     };
+
+        //     // Store the new message at the next index
+    //     self.media_messages.write((plan_id, current_count), new_message);
+
+        //     // Increment the message count for the plan
+    //     self.media_message_count.write(plan_id, current_count + 1);
+    // }
     }
 }

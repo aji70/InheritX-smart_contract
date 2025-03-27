@@ -20,9 +20,9 @@ pub struct AssetAllocation {
 
 #[derive(Copy, Drop, Serde)]
 pub struct MediaMessage {
-    pub plan_id: felt252,       
-    pub media_type: felt252,    
-    pub media_content: felt252  
+    pub plan_id: felt252,
+    pub media_type: felt252,
+    pub media_content: felt252,
 }
 
 #[starknet::interface]
@@ -62,12 +62,12 @@ pub trait IInheritX<TContractState> {
     fn transfer_funds(ref self: TContractState, beneficiary: ContractAddress, amount: u256);
     fn test_deployment(ref self: TContractState) -> bool;
 
-    fn get_activity_history(
-        self: @TContractState, user: ContractAddress, start_index: u256, page_size: u256,
-    ) -> Array<ActivityRecord>;
+    // fn get_activity_history(
+    //     self: @TContractState, user: ContractAddress, start_index: u256, page_size: u256,
+    // ) -> Array<ActivityRecord>;
 
-    fn get_activity_history_length(self: @TContractState, user: ContractAddress) -> u256;
-    fn get_total_plans(self: @TContractState) -> u256;
+    // fn get_activity_history_length(self: @TContractState, user: ContractAddress) -> u256;
+    // fn get_total_plans(self: @TContractState) -> u256;
     fn create_profile(
         ref self: TContractState,
         username: felt252,
@@ -76,4 +76,7 @@ pub trait IInheritX<TContractState> {
         profile_image: felt252,
     ) -> bool;
     fn get_profile(ref self: TContractState, address: ContractAddress) -> UserProfile;
+
+    fn delete_user_profile(ref self: TContractState, address: ContractAddress) -> bool;
+    fn get_user(ref self: TContractState, address: ContractAddress) -> UserProfile;
 }
